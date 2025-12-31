@@ -13,7 +13,7 @@ This project focuses on clear, modular design and sets the foundation for future
 
 ---
 
-## Current Status — Phase 1
+## Phase 1: Domain Modeling (Completed)
 
 Phase 1 covers the **core domain modeling**:
 
@@ -21,17 +21,78 @@ Phase 1 covers the **core domain modeling**:
 - **Criterion**: A measurable factor used to evaluate options (e.g., cost, growth, risk).
 - **Outcome**: The expected, best, and worst results for an option per criterion.
 
-Implemented using:
+---
 
-- Python 3.11+
-- `dataclasses` and type hints
-- Modular structure for future extensibility
+## Phase 2: Normalization & Scoring (Completed)
+
+Phase 2 introduces deterministic decision evaluation.
+
+- Normalization of heterogeneous metrics to a common 0–1 scale
+- Support for both maximization and minimization criteria
+- Weighted aggregation of scores across multiple options
+- Fully testable and explainable scoring pipeline
+
+This phase enables objective comparison of complex options under uncertainty.
 
 ---
 
-## Tech Stack
+### Example — Phase 2 Decision Scoring
 
-- Python 3.11+
+This example demonstrates how the system evaluates multiple options using
+normalized and weighted criteria under uncertainty.
+
+The scenario compares two job offers based on three criteria:
+- Salary (maximize)
+- Growth potential (maximize)
+- Risk level (minimize)
+
+Each option defines best, expected, and worst outcomes per criterion.
+Phase 2 focuses on scoring using the expected values.
+
+### Options Definition
+
+**Job A**
+- Salary: best 120, expected 100, worst 80
+- Growth: best 10, expected 7, worst 5
+- Risk: best 5, expected 7, worst 10
+
+**Job B**
+- Salary: best 110, expected 95, worst 80
+- Growth: best 12, expected 8, worst 4
+- Risk: best 3, expected 5, worst 8
+
+### Criteria Configuration
+
+| Criterion | Weight | Objective |
+|---------|--------|-----------|
+| Salary  | 0.5    | Maximize  |
+| Growth  | 0.3    | Maximize  |
+| Risk    | 0.2    | Minimize  |
+
+Weights sum to 1.0 and reflect relative importance.
+
+### Scoring Process
+
+1. Extract expected values for each criterion
+2. Normalize values to a 0–1 scale
+3. Apply criterion weights
+4. Aggregate weighted scores per option
+
+The scoring logic is fully deterministic and explainable.
+
+### Expected Result
+
+```text
+{
+  "Job A": ~0.65,
+  "Job B": ~0.70
+}
+```
+---
+
+### Tech Stack
+
+- Python 3.13+
 - Standard library only (dataclasses, typing)
 - PyCharm IDE for development
 
@@ -58,10 +119,14 @@ decision-under-uncertainty/
 
 ## Roadmap
 
-1. **Phase 2**: Normalization, scoring, and deterministic decision evaluation
-2. **Phase 3**: Agent layer for meta-reasoning and human-readable explanations
-3. **Phase 4**: Optional data-driven extensions integrating predictive models
+**Phase 3**: Uncertainty strategies and meta-reasoning agent
+(risk-averse vs risk-seeking decision styles, human-readable explanations)
 
+**Phase 4**: Data-driven extensions
+(simulations, predictive models, ML integration)
+
+**Phase 5**: AI-assisted decision advisor
+(LLM-backed, explainable, decision-aware)
 ---
 
 ## How to Run
