@@ -128,6 +128,13 @@ decision-under-uncertainty/
 **Phase 5**: AI-assisted decision advisor
 (LLM-backed, explainable, decision-aware)
 
+<<<<<<< HEAD
+=======
+
+4	Decision Strategies	طراحی چند استراتژی انتخاب: Expected Value, Risk-Averse, Regret Minimization و امتیازدهی نهایی
+5	Sensitivity Analysis	بررسی اثر تغییر وزن‌ها و سناریوهای مختلف روی تصمیم نهایی
+6	AI Decision Agent	لایه‌ی meta: تحلیلگر خروجی، انتخاب استراتژی مناسب، تولید human-readable explanation، پایه برای تعامل با کاربر
+>>>>>>> ffbd64e (Phase 3: uncertainty handling with risk-adjusted scoring)
 ---
 
 ## How to Run
