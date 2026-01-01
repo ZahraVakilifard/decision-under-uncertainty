@@ -5,7 +5,7 @@ from core.scoring import calculate_scores_with_risk
 from core.normalization import normalize
 
 # -------------------------
-# Strategy Interface
+# Base Strategy (Abstract)
 # -------------------------
 class Strategy(ABC):
     @abstractmethod
@@ -15,56 +15,69 @@ class Strategy(ABC):
         criteria: List[Criterion],
         risk_weight: float = 0.5
     ) -> Dict[str, float]:
+        """
+        Evaluate options and return a dictionary mapping Option name -> score
+        """
         pass
 
 # -------------------------
 # Expected Value Strategy
 # -------------------------
 class ExpectedValueStrategy(Strategy):
-    def evaluate(self, options: List[OptionEvaluation], criteria: List[Criterion], risk_weight: float = 0.5) -> Dict[str, float]:
+    def evaluate(
+        self, options: List[OptionEvaluation], criteria: List[Criterion], risk_weight: float = 0.5
+    ) -> Dict[str, float]:
         return calculate_scores_with_risk(options, criteria, risk_weight)
 
 # -------------------------
-# Risk-Averse Strategy (Revised)
+# Risk-Averse Strategy
 # -------------------------
 class RiskAverseStrategy(Strategy):
-    def evaluate(self, options: List[OptionEvaluation], criteria: List[Criterion], risk_weight: float = 0.5) -> Dict[str, float]:
+    def evaluate(
+        self, options: List[OptionEvaluation], criteria: List[Criterion], risk_weight: float = 0.5
+    ) -> Dict[str, float]:
         scores = {opt.option.name: 0.0 for opt in options}
-
         for criterion in criteria:
-            adjusted_values = []
-            for opt in options:
-                outcome = opt.outcomes[criterion.name]
-                spread = outcome.best - outcome.worst
-                if criterion.maximize:
-                    adj = outcome.expected - risk_weight * spread
-                else:
-                    adj = outcome.expected + risk_weight * spread
-                adjusted_values.append(adj)
-
+            adjusted_values = [
+                opt.outcomes[criterion.name].expected - risk_weight * (opt.outcomes[criterion.name].best - opt.outcomes[criterion.name].worst)
+                for opt in options
+            ]
             normalized_values = normalize(adjusted_values, maximize=criterion.maximize)
             for opt, norm_val in zip(options, normalized_values):
                 scores[opt.option.name] += norm_val * criterion.weight
-
         return scores
 
 # -------------------------
-# Regret Minimization Strategy (Revised)
+# Regret Minimization Strategy
 # -------------------------
 class RegretMinimizationStrategy(Strategy):
-    def evaluate(self, options: List[OptionEvaluation], criteria: List[Criterion], risk_weight: float = 0.5) -> Dict[str, float]:
+    def evaluate(
+        self, options: List[OptionEvaluation], criteria: List[Criterion], risk_weight: float = 0.5
+    ) -> Dict[str, float]:
         scores = {opt.option.name: 0.0 for opt in options}
-
         for criterion in criteria:
-            if criterion.maximize:
-                best_val = max([opt.outcomes[criterion.name].best for opt in options])
-                regrets = [max(0.0, best_val - opt.outcomes[criterion.name].worst) for opt in options]
-            else:
-                best_val = min([opt.outcomes[criterion.name].worst for opt in options])
-                regrets = [max(0.0, opt.outcomes[criterion.name].worst - best_val) for opt in options]
-
-            normalized_values = normalize(regrets, maximize=False)
-            for opt, norm_val in zip(options, normalized_values):
+            best_worst = max([opt.outcomes[criterion.name].worst for opt in options])
+            regrets = [max(0.0, best_worst - opt.outcomes[criterion.name].worst) for opt in options]
+            normalized = normalize(regrets, maximize=False)
+            for opt, norm_val in zip(options, normalized):
                 scores[opt.option.name] += norm_val * criterion.weight
-
         return scores
+
+# -------------------------
+# Strategy Factory (Modular & Dynamic)
+# -------------------------
+class StrategyFactory:
+    """
+    Returns strategy instance based on a name string.
+    """
+    _mapping = {
+        "expected_value": ExpectedValueStrategy,
+        "risk_averse": RiskAverseStrategy,
+        "regret_minimization": RegretMinimizationStrategy
+    }
+
+    @staticmethod
+    def get_strategy(name: str) -> Strategy:
+        if name not in StrategyFactory._mapping:
+            raise ValueError(f"Strategy '{name}' not found.")
+        return StrategyFactory._mapping[name]()

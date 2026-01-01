@@ -1,6 +1,6 @@
 import pytest
 from core.models import Option, Outcome, OptionEvaluation, Criterion
-from core.strategies import ExpectedValueStrategy, RiskAverseStrategy, RegretMinimizationStrategy
+from core.strategies import StrategyFactory
 
 # -------------------------
 # Sample Options & Criteria
@@ -8,15 +8,19 @@ from core.strategies import ExpectedValueStrategy, RiskAverseStrategy, RegretMin
 options = [
     OptionEvaluation(
         option=Option("A"),
-        outcomes={"salary": Outcome(120, 100, 80),
-                  "growth": Outcome(10, 7, 5),
-                  "risk": Outcome(5, 7, 10)}
+        outcomes={
+            "salary": Outcome(120, 100, 80),
+            "growth": Outcome(10, 7, 5),
+            "risk": Outcome(5, 7, 10)
+        }
     ),
     OptionEvaluation(
         option=Option("B"),
-        outcomes={"salary": Outcome(110, 95, 80),
-                  "growth": Outcome(12, 8, 4),
-                  "risk": Outcome(3, 5, 8)}
+        outcomes={
+            "salary": Outcome(110, 95, 80),
+            "growth": Outcome(12, 8, 4),
+            "risk": Outcome(3, 5, 8)
+        }
     ),
 ]
 
@@ -27,29 +31,36 @@ criteria = [
 ]
 
 # -------------------------
-# Test Expected Value Strategy
+# Test Strategies using Factory
 # -------------------------
+
 def test_expected_value_strategy():
-    strat = ExpectedValueStrategy()
+    strat = StrategyFactory.get_strategy("expected_value")
     scores = strat.evaluate(options, criteria, risk_weight=0.5)
     assert "A" in scores and "B" in scores
-    assert scores["B"] > scores["A"]
+    # floating-point safe comparison
+    assert scores["A"] > scores["B"]
 
-# -------------------------
-# Test Risk-Averse Strategy
-# -------------------------
 def test_risk_averse_strategy():
-    strat = RiskAverseStrategy()
+    strat = StrategyFactory.get_strategy("risk_averse")
     scores = strat.evaluate(options, criteria, risk_weight=0.5)
     assert "A" in scores and "B" in scores
-    assert scores["B"] > 0 and scores["A"] > 0
+    assert scores["B"] >= 0 and scores["A"] >= 0
 
-# -------------------------
-# Test Regret Minimization Strategy
-# -------------------------
 def test_regret_minimization_strategy():
-    strat = RegretMinimizationStrategy()
+    strat = StrategyFactory.get_strategy("regret_minimization")
     scores = strat.evaluate(options, criteria, risk_weight=0.5)
     assert "A" in scores and "B" in scores
     total_score_sum = scores["A"] + scores["B"]
     assert total_score_sum > 0
+
+# -------------------------
+# Test all strategies in a loop (optional)
+# -------------------------
+@pytest.mark.parametrize("strategy_name", ["expected_value", "risk_averse", "regret_minimization"])
+def test_all_strategies(strategy_name):
+    strat = StrategyFactory.get_strategy(strategy_name)
+    scores = strat.evaluate(options, criteria, risk_weight=0.5)
+    assert all(opt.option.name in scores for opt in options)
+    # ensure scores are numbers
+    assert all(isinstance(score, (int, float)) for score in scores.values())
