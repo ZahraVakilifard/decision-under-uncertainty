@@ -90,6 +90,52 @@ The scoring logic is fully deterministic and explainable.
 ```
 ---
 
+## Phase 3: Uncertainty & Risk Strategies (Completed)
+Phase 3 introduces decision-making strategies under uncertainty:
+
+- **Expected Value Strategy**: Simple, risk-adjusted expected score
+
+- **Risk-Averse Strategy**: Penalizes options with high spread (less stable)
+
+- **Regret Minimization Strategy**: Considers worst-case scenario to reduce potential regret
+
+All strategies are **modular**, follow the same interface, and produce **human-readable**, **ranked outputs**.
+
+### Phase 3 Example
+```angular2html
+from core.strategies import ExpectedValueStrategy, RiskAverseStrategy, RegretMinimizationStrategy
+scores = ExpectedValueStrategy().evaluate(options, criteria, risk_weight=0.5)
+```
+- Outputs ranking of options
+
+- Supports **all criteria**, including growth, salary, and risk
+
+- Normalized and weighted scores allow **fair comparison**
+
+---
+
+## Phase 4: Decision Strategies & Data-Driven Extensions (Completed)
+Phase 4 enhances decision-making by **applying multiple strategies and risk adjustments simultaneously**:
+
+- Expected Value
+- Risk-Averse
+- Regret Minimization
+- Supports risk_weight parameter to tune decision conservatism
+- Fully incorporates all criteria with weights and maximize/minimize objectives
+- Prepares the system for sensitivity analysis and AI-assisted decision recommendations
+
+```angular2html
+strategies = [ExpectedValueStrategy(), RiskAverseStrategy(), RegretMinimizationStrategy()]
+
+for strat in strategies:
+    scores = strat.evaluate(options, criteria, risk_weight=0.5)
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    print(f"{strat.__class__.__name__}: {ranked}")
+```
+- Phase 4 outputs option rankings per strategy
+- Allows comparison of short-term vs long-term, risk-prone vs risk-averse decisions
+
+---
 ### Tech Stack
 
 - Python 3.13+
@@ -119,23 +165,12 @@ decision-under-uncertainty/
 
 ## Roadmap
 
-**Phase 3**: Uncertainty strategies and meta-reasoning agent
-(risk-averse vs risk-seeking decision styles, human-readable explanations)
-
-**Phase 4**: Data-driven extensions
-(simulations, predictive models, ML integration)
-
-**Phase 5**: AI-assisted decision advisor
-(LLM-backed, explainable, decision-aware)
-
-<<<<<<< HEAD
-=======
-
-4	Decision Strategies	طراحی چند استراتژی انتخاب: Expected Value, Risk-Averse, Regret Minimization و امتیازدهی نهایی
-5	Sensitivity Analysis	بررسی اثر تغییر وزن‌ها و سناریوهای مختلف روی تصمیم نهایی
-6	AI Decision Agent	لایه‌ی meta: تحلیلگر خروجی، انتخاب استراتژی مناسب، تولید human-readable explanation، پایه برای تعامل با کاربر
->>>>>>> ffbd64e (Phase 3: uncertainty handling with risk-adjusted scoring)
----
+- **Phase 1** ✅: Domain Modeling (Option, Criterion, Outcome) 
+- **Phase 2** ✅: Normalization & Scoring 
+- **Phase 3** ✅: Uncertainty & Risk Strategies 
+- **Phase 4** ✅: Decision Strategies (Expected Value, Risk-Averse, Regret Minimization) 
+- **Phase 5**: Sensitivity Analysis: Test effect of changing weights and risk parameters
+- **Phase 6**: AI Decision Agent: LLM-assisted, human-readable explanations, strategy recommendation
 
 ## How to Run
 
