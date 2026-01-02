@@ -34,10 +34,38 @@ Phase 2 introduces deterministic decision evaluation.
 
 This phase enables objective comparison of complex options under uncertainty.
 
----
+
 
 ### Example — Phase 2 Decision Scoring
 
+```angular2html
+from core.models import Option, OptionEvaluation, Outcome, Criterion
+from core.strategies import ExpectedValueStrategy
+
+# Options
+options = [
+    OptionEvaluation(
+        Option("Job A"),
+        {"salary": Outcome(120, 100, 80), "growth": Outcome(10, 7, 5), "risk": Outcome(5, 7, 10)}
+    ),
+    OptionEvaluation(
+        Option("Job B"),
+        {"salary": Outcome(110, 95, 80), "growth": Outcome(12, 8, 4), "risk": Outcome(3, 5, 8)}
+    )
+]
+
+# Criteria
+criteria = [
+    Criterion("salary", 0.5, True),
+    Criterion("growth", 0.3, True),
+    Criterion("risk", 0.2, False)
+]
+
+# Scoring
+scores = ExpectedValueStrategy().evaluate(options, criteria, risk_weight=0.5)
+print(scores)
+
+```
 This example demonstrates how the system evaluates multiple options using
 normalized and weighted criteria under uncertainty.
 
@@ -136,6 +164,74 @@ for strat in strategies:
 - Allows comparison of short-term vs long-term, risk-prone vs risk-averse decisions
 
 ---
+
+## Phase 5: Sensitivity Analysis
+- Test effect of changing criterion weights and risk_weight.
+- Analyze ranking stability under different assumptions.
+- Prepare for visualization and AI-assisted decisions.
+
+---
+
+## Phase 6: AI Decision Agent
+
+Integrates risk-aware scoring, growth, and spread.
+
+Produces human-readable breakdown for each option:
+
+- Expected value
+- Spread-adjusted score
+- Total weighted score
+
+Ready for future LLM / AI assistance.
+
+### Example
+
+```python
+from core.agent import risk_aware_agent
+from core.strategies import RiskAverseStrategy
+
+result = risk_aware_agent(
+    options, 
+    criteria, 
+    strategy=RiskAverseStrategy(), 
+    risk_weight=0.5
+)
+
+for opt, bd in result["breakdown"].items():
+    print(f"Option: {opt}")
+    for crit, score in bd.items():
+        print(f"  {crit}: {score:.2f}")
+    print(f"  Total Score: {result['scores'][opt]:.3f}")
+
+print("Ranking:", [r[0] for r in result["ranking"]])
+```
+
+---
+
+## Phase 7: Project Polishing & Visualization
+
+- Add visualization for sensitivity analysis using matplotlib.
+- Provide integration-ready examples in simulation/.
+- Prepare GitHub-ready README, modular structure, and full tests.
+
+```angular2html
+import matplotlib.pyplot as plt
+from core.sensitivity import sensitivity_analysis
+
+results = sensitivity_analysis(options, criteria, strategy=RiskAverseStrategy())
+for opt in ["Job A", "Job B"]:
+    scores = [results[rw][opt] for rw in sorted(results.keys())]
+    plt.plot(sorted(results.keys()), scores, marker='o', label=opt)
+plt.xlabel("Risk Weight")
+plt.ylabel("Score")
+plt.title("Sensitivity Analysis")
+plt.legend()
+plt.show()
+
+```
+
+---
+
 ### Tech Stack
 
 - Python 3.13+
@@ -148,35 +244,52 @@ for strat in strategies:
 
 ```text
 decision-under-uncertainty/
-├── core/          # Domain models: Option, Criterion, Outcome
-│   └── models.py
-├── agent/         # Future AI/agent modules
-│   └── agent.py
-├── simulation/    # Example runs and experiments
-│   └── run_simulation.py
-├── tests/         # Unit and integration tests
-│   └── test_models.py
-├── .gitignore     # Ignore virtual environment, __pycache__, etc.
-└── README.md      # This file
-```
+├── core/          # Domain models & core logic
+│   ├── agent.py
+│   ├── models.py
+│   ├── normalization.py
+│   ├── scoring.py
+│   ├── sensitivity.py
+│   ├── strategies.py
+│   ├── uncertainty.py
+│   └── validation.py
+├── simulation/    # Example runs & experiments
+│   ├── example_phase2.py
+│   ├── example_phase3.py
+│   ├── example_phase4.py
+│   └── sensitivity_example.py
+├── tests/         # Unit & integration tests
+│   ├── test_agent.py
+│   ├── test_models.py
+│   ├── test_scoring.py
+│   ├── test_sensitivity.py
+│   ├── test_strategies.py
+│   └── test_uncertainty.py
+├── main.py        # Demo script
+├── README.md
 
+```
 
 ---
 
 ## Roadmap
 
-- **Phase 1** ✅: Domain Modeling (Option, Criterion, Outcome) 
-- **Phase 2** ✅: Normalization & Scoring 
-- **Phase 3** ✅: Uncertainty & Risk Strategies 
-- **Phase 4** ✅: Decision Strategies (Expected Value, Risk-Averse, Regret Minimization) 
-- **Phase 5**: Sensitivity Analysis: Test effect of changing weights and risk parameters
-- **Phase 6**: AI Decision Agent: LLM-assisted, human-readable explanations, strategy recommendation
+| Phase | Status | Focus |
+|-------|--------|-------|
+| 1     | ✅ Completed | Domain Modeling (Option, Criterion, Outcome) |
+| 2     | ✅ Completed | Normalization & Scoring |
+| 3     | ✅ Completed | Uncertainty & Risk Strategies |
+| 4     | ✅ Completed | Decision Strategies & Risk Adjustment |
+| 5     | ✅ Completed | Sensitivity Analysis & Scenario Testing |
+| 6     | ✅ Completed | AI Decision Agent & Explainable Ranking |
+| 7     | ✅ Completed | Visualization & GitHub-Ready Polishing |
 
 ## How to Run
 
 1. Clone the repository:
 ```bash
 git clone https://github.com/ZahraVakilifard/decision-under-uncertainty.git
+cd decision-under-uncertainty
 ```
 
 2. Set up Python environment:
@@ -186,7 +299,7 @@ source .venv/bin/activate  # Mac/Linux
 .venv\Scripts\activate     # Windows
 ```
 
-3. Run tests to verify setup:
+3. Run all tests
 ```bash
 pytest
 ```
